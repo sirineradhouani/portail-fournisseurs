@@ -117,6 +117,25 @@ export default function Home() {
     }
   }
 
+  // Fonction d'annulation de commande
+  async function annulerCommande(commandeId: string) {
+    if (!confirm("Êtes-vous sûr de vouloir annuler cette commande ?")) return;
+
+    try {
+      const { error } = await supabase
+        .from('commandes')
+        .update({ statut: 'annulee' })
+        .eq('id', commandeId);
+
+      if (error) throw error;
+
+      alert("Commande annulée avec succès !");
+      fetchData();
+    } catch (error: any) {
+      alert("Erreur lors de l'annulation : " + (error.message || JSON.stringify(error)));
+    }
+  }
+
   // Calcul du Scorecard pour un fournisseur donné
   function calculerScorecard(fournisseurId: string) {
     const cmdsFournisseur = commandes.filter(c => c.fournisseur_id === fournisseurId);
@@ -201,9 +220,22 @@ export default function Home() {
                           Produit: <span className="font-medium">{c.lignes_commande[0]?.produit}</span> | Qté: {c.lignes_commande[0]?.quantite} | Prix: {c.lignes_commande[0]?.prix}€
                         </p>
                       </div>
-                      <span className={`px-3 py-1 text-xs rounded-full font-semibold ${c.lignes_commande[0]?.statut_confirmation === 'confirme' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                        {c.lignes_commande[0]?.statut_confirmation === 'confirme' ? '✓ Confirmée' : 'En attente'}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-3 py-1 text-xs rounded-full font-semibold ${
+                          c.statut === 'annulee' ? 'bg-red-100 text-red-800' :
+                          c.lignes_commande[0]?.statut_confirmation === 'confirme' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {c.statut === 'annulee' ? '🚫 Annulée' : c.lignes_commande[0]?.statut_confirmation === 'confirme' ? '✓ Confirmée' : 'En attente'}
+                        </span>
+                        {c.statut !== 'annulee' && (
+                          <button 
+                            onClick={() => annulerCommande(c.id)}
+                            className="px-3 py-1 text-xs bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 font-medium transition"
+                          >
+                            Annuler
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Documents déposés */}
