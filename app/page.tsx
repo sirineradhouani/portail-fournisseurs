@@ -43,10 +43,20 @@ export default function Home() {
     setSubmitting(true);
 
     try {
-      // 1. Créer ou récupérer le fournisseur
-      let fournisseurId = fournisseurs.find(f => f.email === emailFournisseur)?.id;
+      // 1. Créer ou mettre à jour le fournisseur
+      let fournisseurExist = fournisseurs.find(f => f.email === emailFournisseur);
+      let fournisseurId = fournisseurExist?.id;
 
-      if (!fournisseurId) {
+      if (fournisseurExist) {
+        // Mettre à jour le nom si l'email existe déjà
+        const { error: errUpdate } = await supabase
+          .from('fournisseurs')
+          .update({ nom: nomFournisseur })
+          .eq('id', fournisseurId);
+
+        if (errUpdate) throw errUpdate;
+      } else {
+        // Créer un nouveau fournisseur s'il n'existe pas
         const { data: newF, error: errF } = await supabase
           .from('fournisseurs')
           .insert([{ nom: nomFournisseur, email: emailFournisseur }])
@@ -91,7 +101,7 @@ export default function Home() {
 
         if (errAcc) throw errAcc;
 
-        alert(`Commande créée avec succès !\nLien magique : http://localhost:3000/portail/${token}`);
+        alert(`Commande créée avec succès !\nLien magique : ${window.location.origin}/portail/${token}`);
         
         // Reset form
         setNomFournisseur('');
