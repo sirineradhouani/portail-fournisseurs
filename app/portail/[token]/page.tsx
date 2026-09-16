@@ -13,6 +13,11 @@ export default function PortailFournisseur({ params }: { params: Promise<{ token
   const [commandes, setCommandes] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
 
+  // حالات التعامل مع اقتراح تاريخ جديد
+  const [ligneEnModification, setLigneEnModification] = useState<string | null>(null);
+  const [nouvelleDate, setNouvelleDate] = useState('');
+  const [raison, setRaison] = useState('');
+
   useEffect(() => {
     verifierToken();
   }, [token]);
@@ -46,6 +51,32 @@ export default function PortailFournisseur({ params }: { params: Promise<{ token
 
     alert('Ligne confirmée avec succès !');
     verifierToken();
+  }
+
+  async function proposerNouvelleDate(ligneId: string) {
+    if (!nouvelleDate || !raison) {
+      alert("Veuillez indiquer la nouvelle date et la raison du changement.");
+      return;
+    }
+
+    const { error } = await supabase
+      .from('lignes_commande')
+      .update({
+        statut_confirmation: 'modifie_par_fournisseur',
+        date_proposee: nouvelleDate,
+        raison_changement: raison
+      })
+      .eq('id', ligneId);
+
+    if (error) {
+      alert("Erreur lors de l'envoi de la proposition : " + error.message);
+    } else {
+      alert("Proposition envoyée avec succès !");
+      setLigneEnModification(null);
+      setNouvelleDate('');
+      setRaison('');
+      verifierToken();
+    }
   }
 
   async function uploaderDocument(e: React.ChangeEvent<HTMLInputElement>, commandeId: string, typeDoc: string) {
@@ -109,26 +140,82 @@ export default function PortailFournisseur({ params }: { params: Promise<{ token
             <div className="space-y-3">
               <h4 className="text-sm font-semibold text-slate-700">Produits à valider :</h4>
               {c.lignes_commande.map((ligne: any) => (
-                <div key={ligne.id} className="flex justify-between items-center bg-slate-50 p-4 rounded-lg border">
-                  <div>
-                    <p className="font-medium text-slate-800">{ligne.produit}</p>
-                    <p className="text-sm text-slate-600">Quantité: {ligne.quantite} | Prix: {ligne.prix}€</p>
-                    <p className="text-xs text-slate-500 mt-1">Livraison prévue: {ligne.date_livraison_prevue}</p>
+                <div key={ligne.id} className="flex flex-col bg-slate-50 p-4 rounded-lg border gap-3">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-medium text-slate-800">{ligne.produit}</p>
+                      <p className="text-sm text-slate-600">Quantité: {ligne.quantite} | Prix: {ligne.prix}€</p>
+                      <p className="text-xs text-slate-500 mt-1">Livraison prévue: {ligne.date_livraison_prevue || 'N/A'}</p>
+                    </div>
+                    <div>
+                      {ligne.statut_confirmation === 'confirme' ? (
+                        <span className="text-green-600 font-bold text-sm bg-green-50 px-3 py-1 rounded-md border border-green-200">
+                          ✓ Confirmé
+                        </span>
+                      ) : ligne.statut_confirmation === 'modifie_par_fournisseur' ? (
+                        <span className="text-amber-700 font-bold text-xs bg-amber-50 px-3 py-1 rounded-md border border-amber-200">
+                          Modification proposée ({ligne.date_proposee})
+                        </span>
+                      ) : (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => confirmerLigne(ligne.id)}
+                            className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-green-700 transition"
+                          >
+                            Oui, Je confirme
+                          </button>
+                          <button
+                            onClick={() => setLigneEnModification(ligneEnModification === ligne.id ? null : ligne.id)}
+                            className="bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-amber-600 transition"
+                          >
+                            Proposer autre date
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    {ligne.statut_confirmation === 'confirme' ? (
-                      <span className="text-green-600 font-bold text-sm bg-green-50 px-3 py-1 rounded-md border border-green-200">
-                        ✓ Confirmé
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => confirmerLigne(ligne.id)}
-                        className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition"
-                      >
-                        Confirmer la ligne
-                      </button>
-                    )}
-                  </div>
+
+                  {/* Formulaire d'ajout de date et raison */}
+                  {ligneEnModification === ligne.id && (
+                    <div className="mt-2 p-3 bg-white border border-amber-200 rounded-lg space-y-3">
+                      <p className="text-xs font-semibold text-amber-800">Proposer un changement de date :</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-600">Nouvelle date :</label>
+                          <input
+                            type="date"
+                            value={nouvelleDate}
+                            onChange={(e) => setNouvelleDate(e.target.value)}
+                            className="w-full p-1.5 border rounded text-xs mt-1"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-600">Raison du changement :</label>
+                          <input
+                            type="text"
+                            placeholder="Ex: Retard stock..."
+                            value={raison}
+                            onChange={(e) => setRaison(e.target.value)}
+                            className="w-full p-1.5 border rounded text-xs mt-1"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => setLigneEnModification(null)}
+                          className="px-3 py-1 bg-slate-200 text-slate-700 rounded text-xs"
+                        >
+                          Annuler
+                        </button>
+                        <button
+                          onClick={() => proposerNouvelleDate(ligne.id)}
+                          className="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700"
+                        >
+                          Envoyer la proposition
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -137,7 +224,6 @@ export default function PortailFournisseur({ params }: { params: Promise<{ token
             <div className="border-t pt-4 space-y-3">
               <h4 className="text-sm font-semibold text-slate-700">Documents associés :</h4>
               
-              {/* Liste des documents existants */}
               {c.documents && c.documents.length > 0 ? (
                 <ul className="space-y-2">
                   {c.documents.map((doc: any) => (
@@ -153,7 +239,6 @@ export default function PortailFournisseur({ params }: { params: Promise<{ token
                 <p className="text-xs text-slate-500 italic">Aucun document déposé pour le moment.</p>
               )}
 
-              {/* Formulaire d'upload de document */}
               <div className="flex items-center gap-4 bg-blue-50 p-3 rounded-lg border border-blue-100 mt-2">
                 <span className="text-xs font-medium text-blue-900">Déposer un document (Devis / Facture) :</span>
                 <input 
