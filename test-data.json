@@ -1,0 +1,26 @@
+{
+  "fournisseurs": [
+    {
+      "nom": "Tech Supplier SARL",
+      "email": "contact@techsupplier.com"
+    },
+    {
+      "nom": "Industrial Parts Co",
+      "email": "orders@industrialparts.com"
+    }
+  ],
+  "commandes_test": [
+    {
+      "produit": "Serveur Dell PowerEdge R750",
+      "quantite": 2,
+      "prix": 3500,
+      "date_livraison_prevue": "2026-10-15"
+    },
+    {
+      "produit": "Switch Cisco Catalyst 9300",
+      "quantite": 5,
+      "prix": 1200,
+      "date_livraison_prevue": "2026-10-20"
+    }
+  ]
+}

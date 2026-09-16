@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛒 E2 — Portail de Confirmation de Commandes & Scorecard Fournisseur
 
-## Getting Started
+Application web moderne développée dans le cadre du projet de fin d'études / master, permettant la gestion, la confirmation et l'évaluation des commandes d'achat avec un portail fournisseur sécurisé sans mot de passe (Magic Links).
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🌟 Fonctionnalités Principales
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. **Espace Acheteur (Acheteur Dashboard)** :
+   * Création de commandes d'achat avec détails des produits, quantités et dates de livraison prévues.
+   * Génération automatique de liens d'accès sécurisés (Magic Links avec expiration).
+   * Suivi en temps réel des confirmations de commandes par les fournisseurs.
+   * Visualisation et téléchargement des documents déposés par les fournisseurs (Devis, Factures, Bons de livraison).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. **Portail Fournisseur (Magic Link Portal)** :
+   * Accès sécurisé via un token unique sans besoin de création de compte / mot de passe.
+   * Validation / Confirmation des lignes de commande.
+   * Dépôt et upload de documents justificatifs dans Supabase Storage.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. **Évaluation et Scorecard Fournisseurs** :
+   * Calcul dynamique du taux de confirmation des commandes par fournisseur.
+   * Attribution automatique d'un Grade de Performance (Grade A, B ou C).
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠️ Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+* **Frontend / Framework** : Next.js 15 (App Router), TypeScript, Tailwind CSS
+* **Backend / Database** : Supabase (PostgreSQL, Supabase Storage, Row Level Security)
+* **Déploiement** : Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🚀 Installation & Lancement en local
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Cloner le projet & Installer les dépendances** :
+   ```bash
+   npm install
